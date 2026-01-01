@@ -100,7 +100,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 300,
+    height: 400,
     backgroundColor: "#000",
     position: "relative",
   },
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   slide: {
     width: screenWidth,
-    height: 300,
+    height: 400,
   },
   image: {
     width: "100%",

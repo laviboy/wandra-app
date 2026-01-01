@@ -35,7 +35,12 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen
       name="HomeDetail"
       component={ListingDetailScreen}
-      options={{ title: "Listing Details" }}
+      options={{
+        headerShown: false,
+        presentation: "card",
+        animation: "slide_from_right",
+        fullScreenGestureEnabled: true,
+      }}
     />
   </HomeStack.Navigator>
 );

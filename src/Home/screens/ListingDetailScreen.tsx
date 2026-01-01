@@ -1,9 +1,11 @@
+import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,17 +17,21 @@ import Reanimated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { HomeStackParamList } from "../../navigation/types";
 import ImageGallery from "../components/ImageGallery";
 import { useListing } from "../hooks/useListings";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "HomeDetail">;
 
-const ListingDetailScreen = ({ route }: Props) => {
+const ListingDetailScreen = ({ route, navigation }: Props) => {
   const { id } = route.params;
   const { data: listing, isLoading, error } = useListing(id);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const backButtonOpacity = useSharedValue(1);
+  const insets = useSafeAreaInsets();
+  const [pricingSectionBottom, setPricingSectionBottom] = useState(0);
 
   // Reanimated values for animations
   const stickyBarOpacity = useSharedValue(0);
@@ -74,10 +80,22 @@ const ListingDetailScreen = ({ route }: Props) => {
       useNativeDriver: false,
       listener: (event: any) => {
         const offsetY = event.nativeEvent.contentOffset.y;
-        setShowStickyBar(offsetY > 650);
+        // Show sticky bar only when the bottom of pricing section has scrolled past the top
+        setShowStickyBar(
+          pricingSectionBottom > 0 && offsetY > pricingSectionBottom
+        );
+        // Fade out back button as user scrolls down
+        backButtonOpacity.value =
+          offsetY > 100
+            ? withTiming(0, { duration: 200 })
+            : withTiming(1, { duration: 200 });
       },
     }
   );
+
+  const backButtonAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: backButtonOpacity.value,
+  }));
 
   if (isLoading) {
     return (
@@ -116,9 +134,34 @@ const ListingDetailScreen = ({ route }: Props) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      {/* Back Button Overlay */}
+      <Reanimated.View
+        style={[
+          styles.backButtonContainer,
+          backButtonAnimatedStyle,
+          { top: insets.top + 10 },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+      </Reanimated.View>
+
       {/* Sticky Top Bar */}
       {showStickyBar && (
-        <Reanimated.View style={[styles.stickyTopBar, stickyBarAnimatedStyle]}>
+        <Reanimated.View
+          style={[
+            styles.stickyTopBar,
+            stickyBarAnimatedStyle,
+            { paddingTop: insets.top },
+          ]}
+        >
           <View style={styles.stickyContent}>
             <View style={styles.stickyLeft}>
               <Text style={styles.stickyPrice}>{priceDisplay}</Text>
@@ -208,7 +251,14 @@ const ListingDetailScreen = ({ route }: Props) => {
           </View>
 
           {/* Inline Booking Section */}
-          <View style={styles.inlineBookingSection}>
+          <View
+            style={styles.inlineBookingSection}
+            onLayout={(event) => {
+              const layout = event.nativeEvent.layout;
+              // Calculate bottom position: Y position + height of the section
+              setPricingSectionBottom(layout.y + layout.height);
+            }}
+          >
             <Reanimated.View
               style={[styles.bookingCard, bookingCardAnimatedStyle]}
             >
@@ -371,6 +421,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  backButtonContainer: {
+    position: "absolute",
+    left: 16,
+    zIndex: 1000,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   scrollView: {
     flex: 1,
   },
@@ -398,7 +466,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 12,
-    paddingTop: 20,
   },
   stickyLeft: {
     flex: 1,
