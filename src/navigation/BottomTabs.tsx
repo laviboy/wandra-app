@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import AddScreen from "../Add/screens/AddScreen";
 import HomeScreen from "../Home/screens/HomeScreen";
+import ListingDetailScreen from "../Home/screens/ListingDetailScreen";
 import ProfileScreen from "../Profile/screens/ProfileScreen";
 import SearchScreen from "../Search/screens/SearchScreen";
 import SettingsScreen from "../Settings/screens/SettingsScreen";
@@ -29,6 +30,11 @@ const HomeStackNavigator = () => (
       name="HomeMain"
       component={HomeScreen}
       options={{ title: "Home" }}
+    />
+    <HomeStack.Screen
+      name="HomeDetail"
+      component={ListingDetailScreen}
+      options={{ title: "Listing Details" }}
     />
   </HomeStack.Navigator>
 );
