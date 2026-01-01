@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -18,11 +19,18 @@ import Reanimated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { HomeStackParamList } from "../../navigation/types";
+import type {
+  HomeStackParamList,
+  ProfileStackParamList,
+  SearchStackParamList,
+} from "../../navigation/types";
 import ImageGallery from "../components/ImageGallery";
 import { useListing } from "../hooks/useListings";
 
-type Props = NativeStackScreenProps<HomeStackParamList, "HomeDetail">;
+type Props =
+  | NativeStackScreenProps<HomeStackParamList, "HomeDetail">
+  | NativeStackScreenProps<ProfileStackParamList, "ProfileDetail">
+  | NativeStackScreenProps<SearchStackParamList, "SearchDetail">;
 
 const ListingDetailScreen = ({ route, navigation }: Props) => {
   const { id } = route.params;
@@ -32,6 +40,7 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
   const backButtonOpacity = useSharedValue(1);
   const insets = useSafeAreaInsets();
   const [pricingSectionBottom, setPricingSectionBottom] = useState(0);
+  const screenNavigation = useNavigation();
 
   // Reanimated values for animations
   const stickyBarOpacity = useSharedValue(0);
@@ -219,6 +228,27 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
                   </Text>
                 )}
               </View>
+            )}
+
+            {/* Creator Section */}
+            {listing.creator_name && (
+              <TouchableOpacity
+                style={styles.creatorSection}
+                onPress={() => {
+                  // Navigate to creator's profile modal
+                  (screenNavigation as any).navigate("CreatorProfileModal", {
+                    screen: "CreatorProfileMain",
+                    params: { userId: listing.creator_id },
+                  });
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.creatorInfo}>
+                  <Text style={styles.creatorLabel}>Hosted by</Text>
+                  <Text style={styles.creatorName}>{listing.creator_name}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
             )}
           </View>
 
@@ -564,6 +594,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     marginLeft: 4,
+  },
+  creatorSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+  },
+  creatorInfo: {
+    flex: 1,
+  },
+  creatorLabel: {
+    fontSize: 12,
+    color: "#6B7280",
+    fontWeight: "500",
+    marginBottom: 4,
+  },
+  creatorName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#4F46E5",
   },
   quickInfoContainer: {
     flexDirection: "row",

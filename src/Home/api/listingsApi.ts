@@ -33,7 +33,7 @@ export const listingsApi = {
   },
 
   /**
-   * Fetch a single listing by ID with images
+   * Fetch a single listing by ID with images and creator info
    */
   getListingById: async (id: string): Promise<Listing | null> => {
     const { data, error } = await supabase
@@ -41,7 +41,8 @@ export const listingsApi = {
       .select(
         `
         *,
-        images(id, listing_id, url, storage_path, caption, display_order, created_at, updated_at)
+        images(id, listing_id, url, storage_path, caption, display_order, created_at, updated_at),
+        users!creator_id(id, name)
       `
       )
       .eq("id", id)
@@ -51,11 +52,16 @@ export const listingsApi = {
       throw new Error(error.message);
     }
 
-    // Sort images by display_order
+    // Sort images by display_order and extract creator name
     if (data && data.images) {
       data.images = data.images.sort(
         (a: any, b: any) => a.display_order - b.display_order
       );
+    }
+
+    // Add creator_name from the joined users table
+    if (data && data.users) {
+      data.creator_name = data.users.name;
     }
 
     return data;

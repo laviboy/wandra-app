@@ -5,6 +5,7 @@ import React from "react";
 import AddScreen from "../Add/screens/AddScreen";
 import HomeScreen from "../Home/screens/HomeScreen";
 import ListingDetailScreen from "../Home/screens/ListingDetailScreen";
+import AllListingsScreen from "../Profile/screens/AllListingsScreen";
 import ProfileScreen from "../Profile/screens/ProfileScreen";
 import SearchScreen from "../Search/screens/SearchScreen";
 import SettingsScreen from "../Settings/screens/SettingsScreen";
@@ -84,6 +85,25 @@ const ProfileStackNavigator = () => (
       name="ProfileMain"
       component={ProfileScreen}
       options={{ title: "Profile" }}
+    />
+    <ProfileStack.Screen
+      name="AllListings"
+      component={AllListingsScreen}
+      options={{
+        headerShown: true,
+        presentation: "card",
+        animation: "slide_from_right",
+      }}
+    />
+    <ProfileStack.Screen
+      name="ProfileDetail"
+      component={ListingDetailScreen}
+      options={{
+        headerShown: false,
+        presentation: "card",
+        animation: "slide_from_right",
+        fullScreenGestureEnabled: true,
+      }}
     />
   </ProfileStack.Navigator>
 );

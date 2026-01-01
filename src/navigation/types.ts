@@ -26,6 +26,14 @@ export type AddStackParamList = {
 export type ProfileStackParamList = {
   ProfileMain: undefined;
   ProfileEdit: undefined;
+  AllListings: { listings: any[]; title: string };
+  ProfileDetail: { id: string };
+};
+
+export type CreatorProfileStackParamList = {
+  CreatorProfileMain: { userId: string };
+  CreatorProfileDetail: { id: string };
+  CreatorProfileAllListings: { listings: any[]; title: string };
 };
 
 export type SettingsStackParamList = {
@@ -39,6 +47,7 @@ export type BottomTabsParamList = {
   SearchTab: NavigatorScreenParams<SearchStackParamList>;
   AddTab: NavigatorScreenParams<AddStackParamList>;
   ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
+  CreatorProfileTab: NavigatorScreenParams<CreatorProfileStackParamList>;
   SettingsTab: NavigatorScreenParams<SettingsStackParamList>;
 };
 

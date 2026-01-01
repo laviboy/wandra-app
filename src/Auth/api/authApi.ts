@@ -122,4 +122,21 @@ export const authApi = {
     }
     return user;
   },
+
+  /**
+   * Get user by ID from users table
+   */
+  getUserById: async (userId: string) => {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  },
 };

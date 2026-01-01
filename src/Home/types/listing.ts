@@ -12,6 +12,7 @@ export interface ListingImage {
 export interface Listing {
   id: string;
   creator_id: string;
+  creator_name?: string;
   title: string;
   description: string | null;
   short_description: string | null;
