@@ -58,6 +58,25 @@ export const authApi = {
       );
     }
 
+    // Add user to users table (only happens on signup, not login)
+    const { error: upsertError } = await supabase.from("users").upsert(
+      {
+        id: data.user.id,
+        email: data.user.email!,
+        name: credentials.name,
+        role: "traveler", // Default role for new signups
+        email_verified: data.user.email_confirmed_at || null,
+        created_at: data.user.created_at,
+      },
+      {
+        onConflict: "id",
+      }
+    );
+
+    if (upsertError) {
+      throw new Error(`Failed to create user profile: ${upsertError.message}`);
+    }
+
     return {
       user: {
         id: data.user.id,
