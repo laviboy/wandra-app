@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
@@ -100,7 +101,9 @@ const BottomTabs = () => {
         component={HomeStackNavigator}
         options={{
           tabBarLabel: "Home",
-          tabBarIcon: () => null, // You can add icons here
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
@@ -108,7 +111,9 @@ const BottomTabs = () => {
         component={SearchStackNavigator}
         options={{
           tabBarLabel: "Search",
-          tabBarIcon: () => null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="search" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
@@ -116,7 +121,9 @@ const BottomTabs = () => {
         component={AddStackNavigator}
         options={{
           tabBarLabel: "Add",
-          tabBarIcon: () => null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
@@ -124,7 +131,9 @@ const BottomTabs = () => {
         component={ProfileStackNavigator}
         options={{
           tabBarLabel: "Profile",
-          tabBarIcon: () => null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
@@ -132,7 +141,9 @@ const BottomTabs = () => {
         component={SettingsStackNavigator}
         options={{
           tabBarLabel: "Settings",
-          tabBarIcon: () => null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings" size={size} color={color} />
+          ),
         }}
       />
     </Tab.Navigator>

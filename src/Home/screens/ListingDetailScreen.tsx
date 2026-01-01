@@ -1,22 +1,83 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Reanimated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import type { HomeStackParamList } from "../../navigation/types";
 import ImageGallery from "../components/ImageGallery";
 import { useListing } from "../hooks/useListings";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "HomeDetail">;
 
-const ListingDetailScreen = ({ route, navigation }: Props) => {
+const ListingDetailScreen = ({ route }: Props) => {
   const { id } = route.params;
   const { data: listing, isLoading, error } = useListing(id);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [showStickyBar, setShowStickyBar] = useState(false);
+
+  // Reanimated values for animations
+  const stickyBarOpacity = useSharedValue(0);
+  const stickyBarTranslateY = useSharedValue(-100);
+  const bookingCardScale = useSharedValue(0.9);
+  const bookingCardOpacity = useSharedValue(0);
+
+  // Animate sticky bar
+  useEffect(() => {
+    if (showStickyBar) {
+      stickyBarOpacity.value = withTiming(1, { duration: 300 });
+      stickyBarTranslateY.value = withSpring(0, {
+        damping: 15,
+        stiffness: 150,
+      });
+    } else {
+      stickyBarOpacity.value = withTiming(0, { duration: 200 });
+      stickyBarTranslateY.value = withTiming(-100, { duration: 200 });
+    }
+  }, [showStickyBar]);
+
+  // Animate booking card on mount
+  useEffect(() => {
+    if (listing) {
+      bookingCardScale.value = withSpring(1, {
+        damping: 12,
+        stiffness: 100,
+      });
+      bookingCardOpacity.value = withTiming(1, { duration: 400 });
+    }
+  }, [listing]);
+
+  const stickyBarAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: stickyBarOpacity.value,
+    transform: [{ translateY: stickyBarTranslateY.value }],
+  }));
+
+  const bookingCardAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: bookingCardOpacity.value,
+    transform: [{ scale: bookingCardScale.value }],
+  }));
+
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    {
+      useNativeDriver: false,
+      listener: (event: any) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        setShowStickyBar(offsetY > 650);
+      },
+    }
+  );
 
   if (isLoading) {
     return (
@@ -54,215 +115,254 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Image Gallery */}
-      <ImageGallery images={listing.images || []} />
-
-      {/* Content */}
-      <View style={styles.content}>
-        {/* Header Section */}
-        <View style={styles.headerSection}>
-          {/* Tags */}
-          {listing.tags && listing.tags.length > 0 && (
-            <View style={styles.tagsContainer}>
-              {listing.tags.map((tag, index) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
+    <View style={styles.container}>
+      {/* Sticky Top Bar */}
+      {showStickyBar && (
+        <Reanimated.View style={[styles.stickyTopBar, stickyBarAnimatedStyle]}>
+          <View style={styles.stickyContent}>
+            <View style={styles.stickyLeft}>
+              <Text style={styles.stickyPrice}>{priceDisplay}</Text>
+              <Text style={styles.stickySubtext}>per person</Text>
             </View>
-          )}
-
-          <Text style={styles.title}>{listing.title}</Text>
-
-          <View style={styles.locationRow}>
-            <Text style={styles.locationIcon}>📍</Text>
-            <Text style={styles.location}>{listing.destination}</Text>
+            <TouchableOpacity style={styles.stickyBookButton}>
+              <Text style={styles.stickyBookButtonText}>Book Now</Text>
+            </TouchableOpacity>
           </View>
+        </Reanimated.View>
+      )}
 
-          {/* Rating */}
-          {listing.rating !== null && listing.rating > 0 && (
-            <View style={styles.ratingContainer}>
-              <Text style={styles.star}>⭐</Text>
-              <Text style={styles.ratingText}>{listing.rating.toFixed(1)}</Text>
-              {listing.review_count !== null && listing.review_count > 0 && (
-                <Text style={styles.reviewCount}>
-                  · {listing.review_count}{" "}
-                  {listing.review_count === 1 ? "review" : "reviews"}
-                </Text>
-              )}
-            </View>
-          )}
-        </View>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
+        {/* Image Gallery */}
+        <ImageGallery images={listing.images || []} />
 
-        {/* Quick Info Cards */}
-        <View style={styles.quickInfoContainer}>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoIcon}>📅</Text>
-            <Text style={styles.infoLabel}>Start Date</Text>
-            <Text style={styles.infoValue}>
-              {formatDate(listing.start_date) || "TBA"}
-            </Text>
-          </View>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoIcon}>👥</Text>
-            <Text style={styles.infoLabel}>Group Size</Text>
-            <Text style={styles.infoValue}>
-              Max {listing.max_group_size || "N/A"}
-            </Text>
-          </View>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoIcon}>🎯</Text>
-            <Text style={styles.infoLabel}>Difficulty</Text>
-            <Text style={styles.infoValue}>
-              {listing.difficulty
-                ? listing.difficulty.charAt(0).toUpperCase() +
-                  listing.difficulty.slice(1)
-                : "N/A"}
-            </Text>
-          </View>
-        </View>
-
-        {/* Description */}
-        {listing.description && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About</Text>
-            <Text style={styles.description}>{listing.description}</Text>
-          </View>
-        )}
-
-        {/* Details Grid */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Details</Text>
-          <View style={styles.detailsGrid}>
-            {listing.available_spots !== null && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Available Spots</Text>
-                <Text style={styles.detailValue}>
-                  {listing.available_spots} spots
-                </Text>
-              </View>
-            )}
-            {listing.age_range_min !== null &&
-              listing.age_range_max !== null && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Age Range</Text>
-                  <Text style={styles.detailValue}>
-                    {listing.age_range_min} - {listing.age_range_max} years
-                  </Text>
-                </View>
-              )}
-            {listing.start_date && listing.end_date && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Duration</Text>
-                <Text style={styles.detailValue}>
-                  {formatDate(listing.start_date)} -{" "}
-                  {formatDate(listing.end_date)}
-                </Text>
-              </View>
-            )}
-            {listing.instant_bookable && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Booking</Text>
-                <Text style={[styles.detailValue, styles.instantBookable]}>
-                  ⚡ Instant Bookable
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Included Items */}
-        {listing.included_items &&
-          Array.isArray(listing.included_items) &&
-          listing.included_items.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>What&apos;s Included</Text>
-              {listing.included_items.map((item: any, index: number) => (
-                <View key={index} style={styles.listItem}>
-                  <Text style={styles.checkmark}>✓</Text>
-                  <Text style={styles.listItemText}>
-                    {typeof item === "string"
-                      ? item
-                      : item.name || item.title || ""}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-        {/* Not Included Items */}
-        {listing.not_included_items &&
-          Array.isArray(listing.not_included_items) &&
-          listing.not_included_items.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Not Included</Text>
-              {listing.not_included_items.map((item: any, index: number) => (
-                <View key={index} style={styles.listItem}>
-                  <Text style={styles.crossmark}>✗</Text>
-                  <Text style={styles.listItemText}>
-                    {typeof item === "string"
-                      ? item
-                      : item.name || item.title || ""}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-        {/* Itinerary */}
-        {listing.itinerary &&
-          Array.isArray(listing.itinerary) &&
-          listing.itinerary.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Itinerary</Text>
-              {listing.itinerary.map((day: any, index: number) => {
-                // Handle both string and object formats
-                const dayTitle =
-                  typeof day === "string"
-                    ? `Day ${index + 1}`
-                    : day.title || `Day ${index + 1}`;
-                const dayDescription =
-                  typeof day === "string" ? day : day.description || "";
-
-                return (
-                  <View key={index} style={styles.itineraryDay}>
-                    <View style={styles.dayNumber}>
-                      <Text style={styles.dayNumberText}>{index + 1}</Text>
-                    </View>
-                    <View style={styles.dayContent}>
-                      <Text style={styles.dayTitle}>{dayTitle}</Text>
-                      <Text style={styles.dayDescription}>
-                        {dayDescription}
-                      </Text>
-                    </View>
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            {/* Tags */}
+            {listing.tags && listing.tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {listing.tags.map((tag, index) => (
+                  <View key={index} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
                   </View>
-                );
-              })}
+                ))}
+              </View>
+            )}
+
+            <Text style={styles.title}>{listing.title}</Text>
+
+            <View style={styles.locationRow}>
+              <Text style={styles.locationIcon}>📍</Text>
+              <Text style={styles.location}>{listing.destination}</Text>
+            </View>
+
+            {/* Rating */}
+            {listing.rating !== null && listing.rating > 0 && (
+              <View style={styles.ratingContainer}>
+                <Text style={styles.star}>⭐</Text>
+                <Text style={styles.ratingText}>
+                  {listing.rating.toFixed(1)}
+                </Text>
+                {listing.review_count !== null && listing.review_count > 0 && (
+                  <Text style={styles.reviewCount}>
+                    · {listing.review_count}{" "}
+                    {listing.review_count === 1 ? "review" : "reviews"}
+                  </Text>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* Quick Info Cards */}
+          <View style={styles.quickInfoContainer}>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoIcon}>📅</Text>
+              <Text style={styles.infoLabel}>Start Date</Text>
+              <Text style={styles.infoValue}>
+                {formatDate(listing.start_date) || "TBA"}
+              </Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoIcon}>👥</Text>
+              <Text style={styles.infoLabel}>Group Size</Text>
+              <Text style={styles.infoValue}>
+                Max {listing.max_group_size || "N/A"}
+              </Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoIcon}>🎯</Text>
+              <Text style={styles.infoLabel}>Difficulty</Text>
+              <Text style={styles.infoValue}>
+                {listing.difficulty
+                  ? listing.difficulty.charAt(0).toUpperCase() +
+                    listing.difficulty.slice(1)
+                  : "N/A"}
+              </Text>
+            </View>
+          </View>
+
+          {/* Inline Booking Section */}
+          <View style={styles.inlineBookingSection}>
+            <Reanimated.View
+              style={[styles.bookingCard, bookingCardAnimatedStyle]}
+            >
+              <View style={styles.pricingInfo}>
+                <Text style={styles.priceLabel}>Price per person</Text>
+                <Text style={styles.priceAmount}>{priceDisplay}</Text>
+                {listing.available_spots !== null && (
+                  <Text style={styles.spotsText}>
+                    {listing.available_spots} spots left
+                  </Text>
+                )}
+              </View>
+              <TouchableOpacity style={styles.bookButton}>
+                <Text style={styles.bookButtonText}>Book Now</Text>
+              </TouchableOpacity>
+              <Text style={styles.instantBookText}>
+                {listing.instant_bookable
+                  ? "⚡ Instant confirmation"
+                  : "📧 Confirmation within 24 hours"}
+              </Text>
+            </Reanimated.View>
+          </View>
+
+          {/* Description */}
+          {listing.description && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>About</Text>
+              <Text style={styles.description}>{listing.description}</Text>
             </View>
           )}
 
-        {/* Cancellation Policy */}
-        {listing.cancellation_policy && (
+          {/* Details Grid */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Cancellation Policy</Text>
-            <Text style={styles.policyText}>{listing.cancellation_policy}</Text>
+            <Text style={styles.sectionTitle}>Details</Text>
+            <View style={styles.detailsGrid}>
+              {listing.available_spots !== null && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Available Spots</Text>
+                  <Text style={styles.detailValue}>
+                    {listing.available_spots} spots
+                  </Text>
+                </View>
+              )}
+              {listing.age_range_min !== null &&
+                listing.age_range_max !== null && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Age Range</Text>
+                    <Text style={styles.detailValue}>
+                      {listing.age_range_min} - {listing.age_range_max} years
+                    </Text>
+                  </View>
+                )}
+              {listing.start_date && listing.end_date && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Duration</Text>
+                  <Text style={styles.detailValue}>
+                    {formatDate(listing.start_date)} -{" "}
+                    {formatDate(listing.end_date)}
+                  </Text>
+                </View>
+              )}
+              {listing.instant_bookable && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Booking</Text>
+                  <Text style={[styles.detailValue, styles.instantBookable]}>
+                    ⚡ Instant Bookable
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-        )}
-      </View>
 
-      {/* Bottom Booking Bar */}
-      <View style={styles.bottomBar}>
-        <View style={styles.priceSection}>
-          <Text style={styles.priceLabel}>From</Text>
-          <Text style={styles.priceAmount}>{priceDisplay}</Text>
-          <Text style={styles.pricePerPerson}>per person</Text>
+          {/* Included Items */}
+          {listing.included_items &&
+            Array.isArray(listing.included_items) &&
+            listing.included_items.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>What&apos;s Included</Text>
+                {listing.included_items.map((item: any, index: number) => (
+                  <View key={index} style={styles.listItem}>
+                    <Text style={styles.checkmark}>✓</Text>
+                    <Text style={styles.listItemText}>
+                      {typeof item === "string"
+                        ? item
+                        : item.name || item.title || ""}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+          {/* Not Included Items */}
+          {listing.not_included_items &&
+            Array.isArray(listing.not_included_items) &&
+            listing.not_included_items.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Not Included</Text>
+                {listing.not_included_items.map((item: any, index: number) => (
+                  <View key={index} style={styles.listItem}>
+                    <Text style={styles.crossmark}>✗</Text>
+                    <Text style={styles.listItemText}>
+                      {typeof item === "string"
+                        ? item
+                        : item.name || item.title || ""}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+          {/* Itinerary */}
+          {listing.itinerary &&
+            Array.isArray(listing.itinerary) &&
+            listing.itinerary.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Itinerary</Text>
+                {listing.itinerary.map((day: any, index: number) => {
+                  // Handle both string and object formats
+                  const dayTitle =
+                    typeof day === "string"
+                      ? `Day ${index + 1}`
+                      : day.title || `Day ${index + 1}`;
+                  const dayDescription =
+                    typeof day === "string" ? day : day.description || "";
+
+                  return (
+                    <View key={index} style={styles.itineraryDay}>
+                      <View style={styles.dayNumber}>
+                        <Text style={styles.dayNumberText}>{index + 1}</Text>
+                      </View>
+                      <View style={styles.dayContent}>
+                        <Text style={styles.dayTitle}>{dayTitle}</Text>
+                        <Text style={styles.dayDescription}>
+                          {dayDescription}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+
+          {/* Cancellation Policy */}
+          {listing.cancellation_policy && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Cancellation Policy</Text>
+              <Text style={styles.policyText}>
+                {listing.cancellation_policy}
+              </Text>
+            </View>
+          )}
         </View>
-        <TouchableOpacity style={styles.bookButton}>
-          <Text style={styles.bookButtonText}>Book Now</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -270,6 +370,58 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  stickyTopBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    zIndex: 1000,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  stickyContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingTop: 20,
+  },
+  stickyLeft: {
+    flex: 1,
+  },
+  stickyPrice: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#1F2937",
+  },
+  stickySubtext: {
+    fontSize: 12,
+    color: "#6B7280",
+  },
+  stickyBookButton: {
+    backgroundColor: "#4F46E5",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  stickyBookButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#fff",
   },
   centerContainer: {
     flex: 1,
@@ -283,7 +435,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
   },
   content: {
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
   headerSection: {
     padding: 20,
@@ -469,49 +621,51 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     lineHeight: 22,
   },
-  bottomBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+  inlineBookingSection: {
+    padding: 20,
+    backgroundColor: "#F9FAFB",
+  },
+  bookingCard: {
     backgroundColor: "#fff",
-    padding: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
+    borderRadius: 16,
+    padding: 24,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: -2,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
-  priceSection: {
-    flex: 1,
+  pricingInfo: {
+    marginBottom: 20,
+    alignItems: "center",
   },
   priceLabel: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#6B7280",
-    marginBottom: 2,
+    marginBottom: 8,
+    fontWeight: "500",
   },
   priceAmount: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "800",
     color: "#1F2937",
+    marginBottom: 4,
   },
-  pricePerPerson: {
-    fontSize: 12,
-    color: "#6B7280",
+  spotsText: {
+    fontSize: 13,
+    color: "#EF4444",
+    fontWeight: "600",
   },
   bookButton: {
     backgroundColor: "#4F46E5",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderRadius: 12,
+    alignItems: "center",
     shadowColor: "#4F46E5",
     shadowOffset: {
       width: 0,
@@ -520,11 +674,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
+    marginBottom: 12,
   },
   bookButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "700",
     color: "#fff",
+  },
+  instantBookText: {
+    fontSize: 13,
+    color: "#10B981",
+    textAlign: "center",
+    fontWeight: "600",
   },
   errorIcon: {
     fontSize: 64,
