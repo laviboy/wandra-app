@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React from "react";
+import React, { useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -24,12 +24,18 @@ const HomeScreen = ({ navigation }: Props) => {
     isRefetching,
   } = useListings();
 
-  const handleCardPress = (listingId: string) => {
-    navigation.navigate("HomeDetail", { id: listingId });
-  };
+  const handleCardPress = useCallback(
+    (listingId: string) => {
+      navigation.navigate("HomeDetail", { id: listingId });
+    },
+    [navigation]
+  );
 
-  const renderItem = ({ item }: { item: Listing }) => (
-    <ListingCard listing={item} onPress={() => handleCardPress(item.id)} />
+  const renderItem = useCallback(
+    ({ item }: { item: Listing }) => (
+      <ListingCard listing={item} onPress={() => handleCardPress(item.id)} />
+    ),
+    [handleCardPress]
   );
 
   const renderEmpty = () => (
@@ -85,6 +91,9 @@ const HomeScreen = ({ navigation }: Props) => {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
         showsVerticalScrollIndicator={false}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        initialNumToRender={8}
       />
     </View>
   );

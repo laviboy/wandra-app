@@ -298,4 +298,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ListingCard;
+export default React.memo(ListingCard);

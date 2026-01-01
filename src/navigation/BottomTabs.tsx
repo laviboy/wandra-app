@@ -53,6 +53,16 @@ const SearchStackNavigator = () => (
       component={SearchScreen}
       options={{ title: "Search" }}
     />
+    <SearchStack.Screen
+      name="SearchDetail"
+      component={ListingDetailScreen}
+      options={{
+        headerShown: false,
+        presentation: "card",
+        animation: "slide_from_right",
+        fullScreenGestureEnabled: true,
+      }}
+    />
   </SearchStack.Navigator>
 );
 

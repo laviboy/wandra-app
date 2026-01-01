@@ -3,7 +3,14 @@ import { listingsApi } from "../api/listingsApi";
 
 export const useListings = () => {
   return useQuery({
-    queryKey: ["listings"],
+    queryKey: ["listings", "home"],
+    queryFn: listingsApi.getListings,
+  });
+};
+
+export const useSearchListings = () => {
+  return useQuery({
+    queryKey: ["listings", "search"],
     queryFn: listingsApi.getListings,
   });
 };
@@ -16,7 +23,7 @@ export const useListing = (id: string) => {
   });
 };
 
-export const useSearchListings = (query: string) => {
+export const useSearchListingsQuery = (query: string) => {
   return useQuery({
     queryKey: ["listings", "search", query],
     queryFn: () => listingsApi.searchListings(query),

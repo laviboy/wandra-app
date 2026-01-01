@@ -15,6 +15,7 @@ export type HomeStackParamList = {
 export type SearchStackParamList = {
   SearchMain: undefined;
   SearchResults: { query: string };
+  SearchDetail: { id: string };
 };
 
 export type AddStackParamList = {

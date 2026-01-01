@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   counter: {
     position: "absolute",
-    top: 16,
+    bottom: 16,
     right: 16,
     backgroundColor: "rgba(0, 0, 0, 0.6)",
     paddingHorizontal: 12,
