@@ -1,77 +1,106 @@
+import { supabase } from "../../../utils/supabase";
 import type {
   AuthResponse,
   LoginCredentials,
   SignupCredentials,
 } from "../types/auth";
 
-// Simulated API delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Mock user database
-const mockUsers = new Map<
-  string,
-  { email: string; password: string; name: string }
->();
-
 export const authApi = {
   /**
-   * Mock login API call
-   * Simulates authentication with 1 second delay
+   * Login with Supabase Auth
    */
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    await delay(1000);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
 
-    const user = mockUsers.get(credentials.email);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    if (!user || user.password !== credentials.password) {
+    if (!data.user || !data.session) {
       throw new Error("Invalid email or password");
     }
 
     return {
       user: {
-        id: Math.random().toString(36).substring(7),
-        email: user.email,
-        name: user.name,
-        createdAt: new Date().toISOString(),
+        id: data.user.id,
+        email: data.user.email!,
+        name: data.user.user_metadata?.name || data.user.email!.split("@")[0],
+        createdAt: data.user.created_at,
       },
-      token: `mock_token_${Date.now()}`,
+      token: data.session.access_token,
     };
   },
 
   /**
-   * Mock signup API call
-   * Simulates user registration with 1 second delay
+   * Signup with Supabase Auth
    */
   signup: async (credentials: SignupCredentials): Promise<AuthResponse> => {
-    await delay(1000);
-
-    if (mockUsers.has(credentials.email)) {
-      throw new Error("Email already exists");
-    }
-
-    // Store new user
-    mockUsers.set(credentials.email, {
+    const { data, error } = await supabase.auth.signUp({
       email: credentials.email,
       password: credentials.password,
-      name: credentials.name,
+      options: {
+        data: {
+          name: credentials.name,
+        },
+      },
     });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data.user || !data.session) {
+      throw new Error(
+        "Signup failed. Please check your email to confirm your account."
+      );
+    }
 
     return {
       user: {
-        id: Math.random().toString(36).substring(7),
-        email: credentials.email,
+        id: data.user.id,
+        email: data.user.email!,
         name: credentials.name,
-        createdAt: new Date().toISOString(),
+        createdAt: data.user.created_at,
       },
-      token: `mock_token_${Date.now()}`,
+      token: data.session.access_token,
     };
   },
 
   /**
-   * Mock logout API call
+   * Logout with Supabase Auth
    */
   logout: async (): Promise<void> => {
-    await delay(500);
-    // In a real app, this would invalidate the token
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw new Error(error.message);
+    }
+  },
+
+  /**
+   * Get current session
+   */
+  getSession: async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data.session;
+  },
+
+  /**
+   * Get current user
+   */
+  getCurrentUser: async () => {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+    if (error) {
+      throw new Error(error.message);
+    }
+    return user;
   },
 };
