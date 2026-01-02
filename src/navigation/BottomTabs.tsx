@@ -125,7 +125,7 @@ const Tab = createBottomTabNavigator<BottomTabsParamList>();
 
 const BottomTabs = () => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   return (
     <Tab.Navigator
@@ -134,7 +134,7 @@ const BottomTabs = () => {
         tabBarActiveTintColor: "#007AFF",
         tabBarInactiveTintColor: isDark ? "#8E8E93" : "#8E8E93",
         tabBarStyle: {
-          backgroundColor: isDark ? '#1f2937' : '#fff',
+          backgroundColor: isDark ? "#1f2937" : "#fff",
         },
       }}
     >

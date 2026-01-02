@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 
 export default function App() {
   const colorScheme = useColorScheme();
-  
+
   return (
     <QueryClientProvider client={queryClient}>
       <RootNavigator />
