@@ -9,6 +9,12 @@ import ListingDetailScreen from "../Home/screens/ListingDetailScreen";
 import AllListingsScreen from "../Profile/screens/AllListingsScreen";
 import ProfileScreen from "../Profile/screens/ProfileScreen";
 import SearchScreen from "../Search/screens/SearchScreen";
+import AddressScreen from "../Settings/screens/AddressScreen";
+import NotificationsScreen from "../Settings/screens/NotificationsScreen";
+import PaymentMethodsScreen from "../Settings/screens/PaymentMethodsScreen";
+import PreferenceScreen from "../Settings/screens/PreferenceScreen";
+import ProfileSettingsScreen from "../Settings/screens/ProfileSettingsScreen";
+import SecurityScreen from "../Settings/screens/SecurityScreen";
 import SettingsScreen from "../Settings/screens/SettingsScreen";
 import type {
   AddStackParamList,
@@ -116,6 +122,36 @@ const SettingsStackNavigator = () => (
       name="SettingsMain"
       component={SettingsScreen}
       options={{ title: "Settings" }}
+    />
+    <SettingsStack.Screen
+      name="ProfileSettings"
+      component={ProfileSettingsScreen}
+      options={{ title: "Profile Settings" }}
+    />
+    <SettingsStack.Screen
+      name="PaymentMethods"
+      component={PaymentMethodsScreen}
+      options={{ title: "Payment Methods" }}
+    />
+    <SettingsStack.Screen
+      name="Address"
+      component={AddressScreen}
+      options={{ title: "Address" }}
+    />
+    <SettingsStack.Screen
+      name="Notifications"
+      component={NotificationsScreen}
+      options={{ title: "Notifications" }}
+    />
+    <SettingsStack.Screen
+      name="Security"
+      component={SecurityScreen}
+      options={{ title: "Security" }}
+    />
+    <SettingsStack.Screen
+      name="Preference"
+      component={PreferenceScreen}
+      options={{ title: "Preference" }}
     />
   </SettingsStack.Navigator>
 );

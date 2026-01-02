@@ -38,7 +38,12 @@ export type CreatorProfileStackParamList = {
 
 export type SettingsStackParamList = {
   SettingsMain: undefined;
-  SettingsDetail: { section: string };
+  ProfileSettings: undefined;
+  PaymentMethods: undefined;
+  Address: undefined;
+  Notifications: undefined;
+  Security: undefined;
+  Preference: undefined;
 };
 
 // Bottom Tabs
