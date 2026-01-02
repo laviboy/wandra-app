@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { IncludedItem, ListingFormData } from "../../types/listing";
+import { AutoScrollTextInput } from "../AutoScrollTextInput";
 
 interface WhatsIncludedStepProps {
   formData: ListingFormData;
@@ -87,7 +82,7 @@ export const WhatsIncludedStep: React.FC<WhatsIncludedStepProps> = ({
               </TouchableOpacity>
             </View>
 
-            <TextInput
+            <AutoScrollTextInput
               style={styles.input}
               value={item.title}
               onChangeText={(text) =>
@@ -97,7 +92,7 @@ export const WhatsIncludedStep: React.FC<WhatsIncludedStepProps> = ({
               placeholderTextColor="#9ca3af"
             />
 
-            <TextInput
+            <AutoScrollTextInput
               style={[styles.input, styles.textArea]}
               value={item.description}
               onChangeText={(text) =>
@@ -140,7 +135,7 @@ export const WhatsIncludedStep: React.FC<WhatsIncludedStepProps> = ({
               </TouchableOpacity>
             </View>
 
-            <TextInput
+            <AutoScrollTextInput
               style={styles.input}
               value={item.title}
               onChangeText={(text) =>
@@ -150,7 +145,7 @@ export const WhatsIncludedStep: React.FC<WhatsIncludedStepProps> = ({
               placeholderTextColor="#9ca3af"
             />
 
-            <TextInput
+            <AutoScrollTextInput
               style={[styles.input, styles.textArea]}
               value={item.description}
               onChangeText={(text) =>
@@ -175,7 +170,7 @@ export const WhatsIncludedStep: React.FC<WhatsIncludedStepProps> = ({
 
       <View style={styles.field}>
         <Text style={styles.sectionTitle}>Cancellation Policy</Text>
-        <TextInput
+        <AutoScrollTextInput
           style={[styles.input, styles.textArea, styles.textAreaLarge]}
           value={formData.cancellation_policy}
           onChangeText={(text) => updateFormData({ cancellation_policy: text })}

@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import { ScrollProvider } from "./ScrollContext";
 
 interface StepContainerProps {
   children: React.ReactNode;
@@ -24,8 +25,9 @@ export const StepContainer: React.FC<StepContainerProps> = ({
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.container}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <ScrollView
         ref={scrollViewRef}
@@ -33,8 +35,13 @@ export const StepContainer: React.FC<StepContainerProps> = ({
         contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
+        automaticallyAdjustContentInsets={false}
       >
-        {children}
+        <ScrollProvider scrollViewRef={scrollViewRef}>
+          {children}
+        </ScrollProvider>
       </ScrollView>
     </KeyboardAvoidingView>
   );

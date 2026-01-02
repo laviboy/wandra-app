@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useEffect } from "react";
-import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, TouchableOpacity, useColorScheme, View } from "react-native";
 import { useAuthStore } from "../Auth/hooks/useAuthStore";
 import AuthStack from "../Auth/navigation/AuthStack";
 import ListingDetailScreen from "../Home/screens/ListingDetailScreen";
@@ -57,6 +57,7 @@ const CreatorProfileModalStack = () => (
 const RootNavigator = () => {
   const { isAuthenticated, isLoading, isInitialized, initialize } =
     useAuthStore();
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     initialize();
@@ -65,14 +66,16 @@ const RootNavigator = () => {
   // Show loading screen while initializing auth
   if (!isInitialized || isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colorScheme === 'dark' ? '#151718' : '#fff' }}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
   }
 
+  const navigationTheme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       {isAuthenticated ? (
         <RootStack.Navigator>
           <RootStack.Group>

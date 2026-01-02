@@ -1,15 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
 import Reanimated, {
@@ -143,7 +144,7 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      {/* StatusBar is now controlled globally */}
 
       {/* Back Button Overlay */}
       <Reanimated.View

@@ -4,12 +4,7 @@ import type { Listing } from "@/src/Home/types/listing";
 import type { ProfileStackParamList } from "@/src/navigation/types";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   AccountStatusSection,
@@ -159,6 +154,8 @@ const ProfileScreen: React.FC<
     );
   }
 
+  // console.log(currentUser);
+
   return (
     <ScrollView
       style={styles.container}
@@ -174,9 +171,7 @@ const ProfileScreen: React.FC<
       <ListingsSection
         title="Your Listings"
         listings={createdListings}
-        onViewAll={() =>
-          handleViewAllPress(createdListings, "Your Listings")
-        }
+        onViewAll={() => handleViewAllPress(createdListings, "Your Listings")}
         onListingPress={handleListingTilePress}
         emptyMessage="No listings created yet"
       />
@@ -192,9 +187,7 @@ const ProfileScreen: React.FC<
       <ListingsSection
         title="Upcoming"
         listings={upcomingListings}
-        onViewAll={() =>
-          handleViewAllPress(upcomingListings, "Upcoming Trips")
-        }
+        onViewAll={() => handleViewAllPress(upcomingListings, "Upcoming Trips")}
         onListingPress={handleListingTilePress}
         emptyMessage="No upcoming trips"
       />

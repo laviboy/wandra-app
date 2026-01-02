@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ListingFormData } from "../../types/listing";
+import { AutoScrollTextInput } from "../AutoScrollTextInput";
 
 const POPULAR_TAGS = [
   "adventure",
@@ -49,7 +44,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     <View style={styles.container}>
       <View style={styles.field}>
         <Text style={styles.label}>Travel Title *</Text>
-        <TextInput
+        <AutoScrollTextInput
           style={styles.input}
           value={formData.title}
           onChangeText={(text) => updateFormData({ title: text })}
@@ -60,7 +55,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 
       <View style={styles.field}>
         <Text style={styles.label}>Destination *</Text>
-        <TextInput
+        <AutoScrollTextInput
           style={styles.input}
           value={formData.destination}
           onChangeText={(text) => updateFormData({ destination: text })}
@@ -71,7 +66,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 
       <View style={styles.field}>
         <Text style={styles.label}>Short Description *</Text>
-        <TextInput
+        <AutoScrollTextInput
           style={[styles.input, styles.textArea]}
           value={formData.short_description}
           onChangeText={(text) => updateFormData({ short_description: text })}
@@ -88,7 +83,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 
       <View style={styles.field}>
         <Text style={styles.label}>Full Description *</Text>
-        <TextInput
+        <AutoScrollTextInput
           style={[styles.input, styles.textArea, styles.textAreaLarge]}
           value={formData.description}
           onChangeText={(text) => updateFormData({ description: text })}

@@ -49,14 +49,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         data: { session },
       } = await supabase.auth.getSession();
 
+      // console.log("Initial session:", session);
+
       if (session?.user) {
         set({
           user: {
             id: session.user.id,
             email: session.user.email!,
-            name:
-              session.user.user_metadata?.name ||
-              session.user.email!.split("@")[0],
+            name: session.user.user_metadata?.full_name,
             createdAt: session.user.created_at,
           },
           token: session.access_token,
@@ -81,9 +81,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             user: {
               id: session.user.id,
               email: session.user.email!,
-              name:
-                session.user.user_metadata?.name ||
-                session.user.email!.split("@")[0],
+              name: session.user.user_metadata?.full_name,
               createdAt: session.user.created_at,
             },
             token: session.access_token,

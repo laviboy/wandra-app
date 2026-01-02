@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ItineraryItem, ListingFormData } from "../../types/listing";
+import { AutoScrollTextInput } from "../AutoScrollTextInput";
 
 interface ItineraryStepProps {
   formData: ListingFormData;
@@ -67,7 +62,7 @@ export const ItineraryStep: React.FC<ItineraryStepProps> = ({
 
           <View style={styles.field}>
             <Text style={styles.label}>Title *</Text>
-            <TextInput
+            <AutoScrollTextInput
               style={styles.input}
               value={item.title}
               onChangeText={(text) =>
@@ -80,7 +75,7 @@ export const ItineraryStep: React.FC<ItineraryStepProps> = ({
 
           <View style={styles.field}>
             <Text style={styles.label}>Description *</Text>
-            <TextInput
+            <AutoScrollTextInput
               style={[styles.input, styles.textArea]}
               value={item.description}
               onChangeText={(text) =>

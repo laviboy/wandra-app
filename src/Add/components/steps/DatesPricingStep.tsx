@@ -4,11 +4,11 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { ListingFormData } from "../../types/listing";
+import { AutoScrollTextInput } from "../AutoScrollTextInput";
 
 interface DatesPricingStepProps {
   formData: ListingFormData;
@@ -131,7 +131,7 @@ export const DatesPricingStep: React.FC<DatesPricingStepProps> = ({
           <Text style={styles.label}>Min Price *</Text>
           <View style={styles.priceInputContainer}>
             <Text style={styles.currencySymbol}>{formData.currency}</Text>
-            <TextInput
+            <AutoScrollTextInput
               style={styles.priceInput}
               value={formData.price_min?.toString() || ""}
               onChangeText={(text) => {
@@ -149,7 +149,7 @@ export const DatesPricingStep: React.FC<DatesPricingStepProps> = ({
           <Text style={styles.label}>Max Price</Text>
           <View style={styles.priceInputContainer}>
             <Text style={styles.currencySymbol}>{formData.currency}</Text>
-            <TextInput
+            <AutoScrollTextInput
               style={styles.priceInput}
               value={formData.price_max?.toString() || ""}
               onChangeText={(text) => {

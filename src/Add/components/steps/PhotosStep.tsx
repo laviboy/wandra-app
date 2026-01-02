@@ -33,7 +33,7 @@ export const PhotosStep: React.FC<PhotosStepProps> = ({
     index: number
   ): Promise<{ url: string; storage_path: string }> => {
     try {
-      console.log("📤 Starting upload for:", uri);
+      // console.log("📤 Starting upload for:", uri);
 
       // Create form data for file upload
       const fileName = uri.split("/").pop() || `photo-${Date.now()}.jpg`;
@@ -59,7 +59,7 @@ export const PhotosStep: React.FC<PhotosStepProps> = ({
             })
         );
 
-      console.log("📦 Uploading to Supabase storage:", uniqueFileName);
+      // console.log("📦 Uploading to Supabase storage:", uniqueFileName);
 
       // Upload to Supabase storage using base64
       const { data, error } = await supabase.storage
@@ -70,25 +70,25 @@ export const PhotosStep: React.FC<PhotosStepProps> = ({
         });
 
       if (error) {
-        console.error("❌ Upload error:", error);
+        // console.error("❌ Upload error:", error);
         throw error;
       }
 
-      console.log("✅ Upload successful:", data.path);
+      // console.log("✅ Upload successful:", data.path);
 
       // Get public URL
       const {
         data: { publicUrl },
       } = supabase.storage.from("listings-images").getPublicUrl(data.path);
 
-      console.log("🔗 Public URL:", publicUrl);
+      // console.log("🔗 Public URL:", publicUrl);
 
       return {
         url: publicUrl,
         storage_path: data.path,
       };
     } catch (error) {
-      console.error("Upload error:", error);
+      // console.error("Upload error:", error);
       throw error;
     }
   };
@@ -113,7 +113,7 @@ export const PhotosStep: React.FC<PhotosStepProps> = ({
     }
 
     try {
-      console.log("🎯 Requesting permissions...");
+      // console.log("🎯 Requesting permissions...");
       // Request permission
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -126,7 +126,7 @@ export const PhotosStep: React.FC<PhotosStepProps> = ({
         return;
       }
 
-      console.log("✅ Permission granted, launching picker...");
+      // console.log("✅ Permission granted, launching picker...");
       // Launch image picker
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
@@ -135,16 +135,16 @@ export const PhotosStep: React.FC<PhotosStepProps> = ({
         selectionLimit: MAX_PHOTOS - formData.photos.length,
       });
 
-      console.log("📸 Picker result:", result);
+      // console.log("📸 Picker result:", result);
 
       if (!result.canceled && result.assets.length > 0) {
-        console.log(`📷 Selected ${result.assets.length} photos`);
+        // console.log(`📷 Selected ${result.assets.length} photos`);
         setIsUploading(true);
         onUploadStateChange?.(true);
 
         try {
           const uploadPromises = result.assets.map((asset, index) => {
-            console.log(`🔄 Processing photo ${index + 1}:`, asset.uri);
+            // console.log(`🔄 Processing photo ${index + 1}:`, asset.uri);
             const currentIndex = formData.photos.length + index;
             setUploadProgress(
               `Uploading ${index + 1} of ${result.assets.length}...`
@@ -153,10 +153,10 @@ export const PhotosStep: React.FC<PhotosStepProps> = ({
           });
 
           const uploadedPhotos = await Promise.all(uploadPromises);
-          console.log("✅ All photos uploaded:", uploadedPhotos);
+          // console.log("✅ All photos uploaded:", uploadedPhotos);
 
           updateFormData({ photos: [...formData.photos, ...uploadedPhotos] });
-          console.log("✅ Form data updated");
+          // console.log("✅ Form data updated");
 
           Alert.alert("Success", "Photos uploaded successfully!");
         } catch (error) {
@@ -171,10 +171,10 @@ export const PhotosStep: React.FC<PhotosStepProps> = ({
           onUploadStateChange?.(false);
         }
       } else {
-        console.log("❌ Picker was canceled or no assets selected");
+        // console.log("❌ Picker was canceled or no assets selected");
       }
     } catch (error) {
-      console.error("❌ Error in pickImage:", error);
+      // console.error("❌ Error in pickImage:", error);
       Alert.alert("Error", "Failed to open image picker");
     }
   };

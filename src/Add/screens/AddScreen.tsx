@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import { useAuthStore } from "../../Auth/hooks/useAuthStore";
@@ -29,6 +30,7 @@ const AddScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const { user } = useAuthStore();
+  const queryClient = useQueryClient();
 
   const {
     formData,
@@ -97,6 +99,9 @@ const AddScreen = () => {
       };
 
       await createListing(payload, user.id, formData.photos);
+
+      // Invalidate listing queries to refresh all pages showing listings
+      queryClient.invalidateQueries({ queryKey: ["listings"] });
 
       Alert.alert("Draft Saved", "Your listing has been saved as a draft.", [
         {
@@ -175,6 +180,9 @@ const AddScreen = () => {
               // for (let i = 0; i < formData.photos.length; i++) {
               //   await uploadListingImage(listing.id, formData.photos[i], i);
               // }
+
+              // Invalidate listing queries to refresh all pages showing listings
+              queryClient.invalidateQueries({ queryKey: ["listings"] });
 
               Alert.alert(
                 "Success!",

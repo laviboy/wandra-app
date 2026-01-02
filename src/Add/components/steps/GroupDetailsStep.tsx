@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { DifficultyLevel, ListingFormData } from "../../types/listing";
+import { AutoScrollTextInput } from "../AutoScrollTextInput";
 
 interface GroupDetailsStepProps {
   formData: ListingFormData;
@@ -43,7 +38,7 @@ export const GroupDetailsStep: React.FC<GroupDetailsStepProps> = ({
     <View style={styles.container}>
       <View style={styles.field}>
         <Text style={styles.label}>Max Group Size *</Text>
-        <TextInput
+        <AutoScrollTextInput
           style={styles.input}
           value={formData.max_group_size.toString()}
           onChangeText={(text) => {
@@ -63,7 +58,7 @@ export const GroupDetailsStep: React.FC<GroupDetailsStepProps> = ({
 
       <View style={styles.field}>
         <Text style={styles.label}>Available Spots *</Text>
-        <TextInput
+        <AutoScrollTextInput
           style={styles.input}
           value={formData.available_spots.toString()}
           onChangeText={(text) => {
@@ -88,7 +83,7 @@ export const GroupDetailsStep: React.FC<GroupDetailsStepProps> = ({
       <View style={styles.ageRow}>
         <View style={[styles.field, styles.ageField]}>
           <Text style={styles.label}>Min Age *</Text>
-          <TextInput
+          <AutoScrollTextInput
             style={styles.input}
             value={formData.age_range_min.toString()}
             onChangeText={(text) => {
@@ -105,7 +100,7 @@ export const GroupDetailsStep: React.FC<GroupDetailsStepProps> = ({
 
         <View style={[styles.field, styles.ageField]}>
           <Text style={styles.label}>Max Age *</Text>
-          <TextInput
+          <AutoScrollTextInput
             style={styles.input}
             value={formData.age_range_max.toString()}
             onChangeText={(text) => {

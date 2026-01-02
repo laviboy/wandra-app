@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
+import { useColorScheme } from "react-native";
 import AddScreen from "../Add/screens/AddScreen";
 import HomeScreen from "../Home/screens/HomeScreen";
 import ListingDetailScreen from "../Home/screens/ListingDetailScreen";
@@ -123,12 +124,18 @@ const SettingsStackNavigator = () => (
 const Tab = createBottomTabNavigator<BottomTabsParamList>();
 
 const BottomTabs = () => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#007AFF",
-        tabBarInactiveTintColor: "#8E8E93",
+        tabBarInactiveTintColor: isDark ? "#8E8E93" : "#8E8E93",
+        tabBarStyle: {
+          backgroundColor: isDark ? '#1f2937' : '#fff',
+        },
       }}
     >
       <Tab.Screen
