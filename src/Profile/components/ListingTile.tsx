@@ -28,8 +28,7 @@ const ListingTile: React.FC<ListingTileProps> = ({ listing, onPress }) => {
         </Text>
         <View style={styles.tileFooter}>
           <Text style={styles.tilePrice}>
-            {listing.currency}
-            {listing.price_min}-{listing.currency}
+            {listing.currency} {listing.price_min} - {listing.currency}{" "}
             {listing.price_max}
           </Text>
           {listing.rating && (

@@ -7,6 +7,7 @@ import AddScreen from "../Add/screens/AddScreen";
 import HomeScreen from "../Home/screens/HomeScreen";
 import ListingDetailScreen from "../Home/screens/ListingDetailScreen";
 import AllListingsScreen from "../Profile/screens/AllListingsScreen";
+import BookingDetailScreen from "../Profile/screens/BookingDetailScreen";
 import ProfileScreen from "../Profile/screens/ProfileScreen";
 import SearchScreen from "../Search/screens/SearchScreen";
 import AddressScreen from "../Settings/screens/AddressScreen";
@@ -105,6 +106,16 @@ const ProfileStackNavigator = () => (
     <ProfileStack.Screen
       name="ProfileDetail"
       component={ListingDetailScreen}
+      options={{
+        headerShown: false,
+        presentation: "card",
+        animation: "slide_from_right",
+        fullScreenGestureEnabled: true,
+      }}
+    />
+    <ProfileStack.Screen
+      name="BookingDetail"
+      component={BookingDetailScreen}
       options={{
         headerShown: false,
         presentation: "card",

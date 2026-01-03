@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   ScrollView,
   StyleSheet,
@@ -18,11 +19,14 @@ import Reanimated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuthStore } from "../../Auth/hooks/useAuthStore";
 import type {
   HomeStackParamList,
   ProfileStackParamList,
   SearchStackParamList,
 } from "../../navigation/types";
+import { createBooking } from "../api/bookingsApi";
+import BookingModal from "../components/BookingModal";
 import ImageGallery from "../components/ImageGallery";
 import { useListing } from "../hooks/useListings";
 
@@ -40,6 +44,8 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
   const insets = useSafeAreaInsets();
   const [pricingSectionBottom, setPricingSectionBottom] = useState(0);
   const screenNavigation = useNavigation();
+  const [isBookingModalVisible, setIsBookingModalVisible] = useState(false);
+  const { isAuthenticated } = useAuthStore();
 
   // Reanimated values for animations
   const stickyBarOpacity = useSharedValue(0);
@@ -59,7 +65,7 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
       stickyBarOpacity.value = withTiming(0, { duration: 200 });
       stickyBarTranslateY.value = withTiming(-100, { duration: 200 });
     }
-  }, [showStickyBar]);
+  }, [showStickyBar, stickyBarOpacity, stickyBarTranslateY]);
 
   // Animate booking card on mount
   useEffect(() => {
@@ -70,7 +76,7 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
       });
       bookingCardOpacity.value = withTiming(1, { duration: 400 });
     }
-  }, [listing]);
+  }, [listing, bookingCardScale, bookingCardOpacity]);
 
   const stickyBarAnimatedStyle = useAnimatedStyle(() => ({
     opacity: stickyBarOpacity.value,
@@ -104,6 +110,56 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
   const backButtonAnimatedStyle = useAnimatedStyle(() => ({
     opacity: backButtonOpacity.value,
   }));
+
+  const handleBookNow = () => {
+    if (!isAuthenticated) {
+      Alert.alert("Login Required", "Please log in to book this trip.", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Login",
+          onPress: () => {
+            // Navigate to auth screen
+            (screenNavigation as any).navigate("Auth", { screen: "Login" });
+          },
+        },
+      ]);
+      return;
+    }
+    setIsBookingModalVisible(true);
+  };
+
+  const handleSubmitBooking = async (message: string) => {
+    try {
+      await createBooking({
+        listingId: id,
+        travelerNotes: message,
+      });
+
+      setIsBookingModalVisible(false);
+
+      Alert.alert(
+        "Booking Request Sent!",
+        "Your booking request has been sent to the host. You'll be notified when they respond.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Optional: Navigate to bookings screen
+              // navigation.navigate('Bookings');
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert(
+        "Booking Failed",
+        error instanceof Error
+          ? error.message
+          : "Failed to create booking. Please try again."
+      );
+      throw error; // Re-throw to keep modal open
+    }
+  };
 
   if (isLoading) {
     return (
@@ -175,7 +231,10 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
               <Text style={styles.stickyPrice}>{priceDisplay}</Text>
               <Text style={styles.stickySubtext}>per person</Text>
             </View>
-            <TouchableOpacity style={styles.stickyBookButton}>
+            <TouchableOpacity
+              style={styles.stickyBookButton}
+              onPress={handleBookNow}
+            >
               <Text style={styles.stickyBookButtonText}>Book Now</Text>
             </TouchableOpacity>
           </View>
@@ -300,7 +359,10 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
                   </Text>
                 )}
               </View>
-              <TouchableOpacity style={styles.bookButton}>
+              <TouchableOpacity
+                style={styles.bookButton}
+                onPress={handleBookNow}
+              >
                 <Text style={styles.bookButtonText}>Book Now</Text>
               </TouchableOpacity>
               <Text style={styles.instantBookText}>
@@ -441,6 +503,14 @@ const ListingDetailScreen = ({ route, navigation }: Props) => {
           )}
         </View>
       </ScrollView>
+
+      {/* Booking Modal */}
+      <BookingModal
+        visible={isBookingModalVisible}
+        onClose={() => setIsBookingModalVisible(false)}
+        onSubmit={handleSubmitBooking}
+        listingTitle={listing?.title || ""}
+      />
     </View>
   );
 };

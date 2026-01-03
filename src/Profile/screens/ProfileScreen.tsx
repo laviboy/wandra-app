@@ -9,10 +9,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   AccountStatusSection,
   ActionButtons,
+  BookingsSection,
   ListingsSection,
   ProfileHeader,
   StatsSection,
 } from "../components";
+import { useBookings } from "../hooks/useBookings";
 
 interface StatItem {
   label: string;
@@ -32,6 +34,11 @@ const ProfileScreen: React.FC<
   const insets = useSafeAreaInsets();
   const [createdListings, setCreatedListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Fetch user bookings
+  const { data: bookings = [], isLoading: bookingsLoading } = useBookings(
+    currentUser?.id
+  );
 
   // Mock joined and upcoming listings
   const joinedListings: Listing[] = [
@@ -146,6 +153,11 @@ const ProfileScreen: React.FC<
     navigation.navigate("AllListings", { listings, title });
   };
 
+  const handleBookingPress = (booking: any) => {
+    // Navigate to booking detail screen
+    navigation.navigate("BookingDetail", { id: booking.id });
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -167,6 +179,12 @@ const ProfileScreen: React.FC<
         email={currentUser?.email || ""}
       />
       <StatsSection stats={stats} />
+
+      <BookingsSection
+        bookings={bookings}
+        isLoading={bookingsLoading}
+        onBookingPress={handleBookingPress}
+      />
 
       <ListingsSection
         title="Your Listings"

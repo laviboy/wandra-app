@@ -28,6 +28,7 @@ export type ProfileStackParamList = {
   ProfileEdit: undefined;
   AllListings: { listings: any[]; title: string };
   ProfileDetail: { id: string };
+  BookingDetail: { id: string };
 };
 
 export type CreatorProfileStackParamList = {
