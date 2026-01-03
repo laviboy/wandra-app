@@ -17,6 +17,7 @@ import { supabase } from "../../../utils/supabase";
 interface PaymentFormProps {
   bookingId: string;
   amount: number;
+  milestoneId: number; // 1=deposit, 2=second, 3=final
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -24,6 +25,7 @@ interface PaymentFormProps {
 const PaymentForm: React.FC<PaymentFormProps> = ({
   bookingId,
   amount,
+  milestoneId,
   onSuccess,
   onCancel,
 }) => {
@@ -93,20 +95,53 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
 
       if (isSuccess) {
+        // Determine payment_status based on milestone
+        let paymentStatus = "pending";
+        let bookingStatus = "pending_payment";
+        let depositPaid = false;
+
+        if (milestoneId === 1) {
+          // First payment (20%)
+          paymentStatus = "deposit_paid";
+          bookingStatus = "accepted";
+          depositPaid = true;
+        } else if (milestoneId === 2) {
+          // Second payment (30%)
+          paymentStatus = "partial_paid";
+          bookingStatus = "accepted";
+          depositPaid = true;
+        } else if (milestoneId === 3) {
+          // Final payment (50%)
+          paymentStatus = "completed";
+          bookingStatus = "confirmed";
+          depositPaid = true;
+        }
+
         // Update booking payment status in database
         const { error } = await supabase
           .from("travel_group_bookings")
           .update({
-            payment_status: "paid",
-            status: "confirmed",
+            deposit_paid: depositPaid,
+            payment_status: paymentStatus,
+            status: bookingStatus,
+            ...(milestoneId === 3 && {
+              confirmed_at: new Date().toISOString(),
+            }),
           })
           .eq("id", bookingId);
 
         if (error) throw error;
 
+        const paymentMessages = {
+          1: "Your deposit has been processed successfully.",
+          2: "Your second payment has been processed successfully.",
+          3: "Your final payment has been processed successfully. Your booking is now confirmed!",
+        };
+
         Alert.alert(
           "Payment Successful!",
-          "Your deposit has been processed successfully.",
+          paymentMessages[milestoneId as keyof typeof paymentMessages] ||
+            "Payment processed successfully.",
           [{ text: "OK", onPress: onSuccess }]
         );
       } else {
@@ -145,7 +180,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           <View style={styles.header}>
             <View style={styles.headerTitleRow}>
               <Ionicons name="card" size={24} color="#EF4444" />
-              <Text style={styles.headerTitle}>Pay Deposit</Text>
+              <Text style={styles.headerTitle}>
+                {milestoneId === 1
+                  ? "Pay Deposit"
+                  : milestoneId === 2
+                    ? "Pay Second Installment"
+                    : "Pay Final Installment"}
+              </Text>
             </View>
             <Text style={styles.headerSubtitle}>
               Secure your spot by paying the deposit

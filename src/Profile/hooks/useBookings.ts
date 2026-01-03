@@ -8,6 +8,7 @@ export interface Booking {
   agent_id: string;
   status:
     | "pending"
+    | "pending_payment"
     | "confirmed"
     | "cancelled"
     | "completed"
@@ -18,6 +19,9 @@ export interface Booking {
   accepted_at?: string | null;
   confirmed_at?: string | null;
   conversation_id: string | null;
+  payment_status?: string | null;
+  deposit_paid?: boolean | null;
+  deposit_amount?: number | null;
   created_at: string;
   updated_at: string;
   // Joined data from listings table

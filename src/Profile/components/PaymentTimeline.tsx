@@ -5,7 +5,7 @@ import type { PaymentMilestone } from "../types/payment";
 
 interface PaymentTimelineProps {
   milestones: PaymentMilestone[];
-  onPayNow?: () => void;
+  onPayNow?: (milestoneId: number, amount: number) => void;
 }
 
 const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
@@ -199,7 +199,7 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
                                 : "#F59E0B",
                           },
                         ]}
-                        onPress={onPayNow}
+                        onPress={() => onPayNow(milestone.id, milestone.amount)}
                       >
                         <Text style={styles.payButtonText}>
                           {milestone.status === "overdue"

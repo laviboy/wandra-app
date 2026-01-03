@@ -27,6 +27,10 @@ const BookingDetailScreen = ({ route, navigation }: Props) => {
   const { user } = useAuthStore();
   const insets = useSafeAreaInsets();
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [currentMilestone, setCurrentMilestone] = useState<{
+    id: number;
+    amount: number;
+  } | null>(null);
 
   // Calculate payment milestones
   const tripStartDate = useMemo(() => {
@@ -43,13 +47,22 @@ const BookingDetailScreen = ({ route, navigation }: Props) => {
         totalPrice,
         tripStartDate,
         booking?.status || "pending",
-        undefined
+        booking?.payment_status || undefined,
+        booking?.deposit_paid || undefined
       ),
-    [totalPrice, tripStartDate, booking?.status]
+    [
+      totalPrice,
+      tripStartDate,
+      booking?.status,
+      booking?.payment_status,
+      booking?.deposit_paid,
+    ]
   );
 
   const handlePaymentSuccess = () => {
     setShowPaymentForm(false);
+    setCurrentMilestone(null);
+    // Refetch booking data to update payment status
   };
 
   const getStatusConfig = (status: string) => {
@@ -280,21 +293,29 @@ const BookingDetailScreen = ({ route, navigation }: Props) => {
           <PaymentTimeline
             milestones={paymentMilestones}
             onPayNow={
-              isTraveler && ["pending", "accepted"].includes(booking.status)
-                ? () => setShowPaymentForm(true)
+              isTraveler &&
+              ["pending_payment", "accepted"].includes(booking.status)
+                ? (milestoneId: number, amount: number) => {
+                    setCurrentMilestone({ id: milestoneId, amount });
+                    setShowPaymentForm(true);
+                  }
                 : undefined
             }
           />
         </View>
 
         {/* Payment Form Modal */}
-        {showPaymentForm && (
+        {showPaymentForm && currentMilestone && (
           <View style={styles.paymentFormContainer}>
             <PaymentForm
               bookingId={booking.id}
-              amount={Math.round(totalPrice * 0.2)}
+              amount={currentMilestone.amount}
+              milestoneId={currentMilestone.id}
               onSuccess={handlePaymentSuccess}
-              onCancel={() => setShowPaymentForm(false)}
+              onCancel={() => {
+                setShowPaymentForm(false);
+                setCurrentMilestone(null);
+              }}
             />
           </View>
         )}

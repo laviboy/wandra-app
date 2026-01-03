@@ -64,7 +64,10 @@ export const createBooking = async (data: CreateBookingPayload) => {
       listing_id: listingId,
       traveler_id: session.user.id,
       agent_id: listing.creator_id,
-      status: "pending",
+      status: "pending_payment",
+      payment_status: "pending",
+      deposit_paid: false,
+      deposit_amount: Math.round((listing.price_min || 0) * 0.2), // Calculate 20% deposit
       traveler_notes: travelerNotes,
       requested_at: new Date().toISOString(),
     })
@@ -111,7 +114,7 @@ export const createBooking = async (data: CreateBookingPayload) => {
     message: `${session.user.email} wants to join your travel group: ${listing.title}`,
     related_id: String(booking.id),
     related_type: "booking",
-    action_url: `/crm/travel-bookings'`,
+    action_url: `/crm/travel-bookings`,
     read: false,
   });
 

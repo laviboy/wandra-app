@@ -14,7 +14,8 @@ export const calculatePaymentMilestones = (
   totalPrice: number,
   tripStartDate: Date | null,
   bookingStatus: string,
-  paymentStatus?: string
+  paymentStatus?: string,
+  depositPaid?: boolean
 ): PaymentMilestone[] => {
   const now = new Date();
   const milestones: PaymentMilestone[] = [];
@@ -25,7 +26,12 @@ export const calculatePaymentMilestones = (
   depositDueDate.setDate(depositDueDate.getDate() + 3); // Due in 3 days
 
   let depositStatus: PaymentStatus = "current";
-  if (paymentStatus === "paid" || bookingStatus === "confirmed") {
+  if (
+    depositPaid === true ||
+    paymentStatus === "deposit_paid" ||
+    paymentStatus === "partial_paid" ||
+    paymentStatus === "completed"
+  ) {
     depositStatus = "paid";
   } else if (depositDueDate < now) {
     depositStatus = "overdue";
@@ -48,7 +54,9 @@ export const calculatePaymentMilestones = (
     : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
 
   let secondStatus: PaymentStatus = "upcoming";
-  if (depositStatus === "paid") {
+  if (paymentStatus === "partial_paid" || paymentStatus === "completed") {
+    secondStatus = "paid";
+  } else if (depositStatus === "paid") {
     if (secondDueDate < now) {
       secondStatus = "overdue";
     } else if (
@@ -76,7 +84,9 @@ export const calculatePaymentMilestones = (
     : new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000); // 60 days from now
 
   let finalStatus: PaymentStatus = "upcoming";
-  if (secondStatus === "paid") {
+  if (paymentStatus === "completed") {
+    finalStatus = "paid";
+  } else if (secondStatus === "paid") {
     if (finalDueDate < now) {
       finalStatus = "overdue";
     } else if (

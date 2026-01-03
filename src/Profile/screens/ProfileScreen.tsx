@@ -2,9 +2,16 @@ import { useAuth } from "@/src/Auth/hooks/useAuth";
 import { listingsApi } from "@/src/Home/api/listingsApi";
 import type { Listing } from "@/src/Home/types/listing";
 import type { ProfileStackParamList } from "@/src/navigation/types";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   AccountStatusSection,
@@ -34,11 +41,14 @@ const ProfileScreen: React.FC<
   const insets = useSafeAreaInsets();
   const [createdListings, setCreatedListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch user bookings
-  const { data: bookings = [], isLoading: bookingsLoading } = useBookings(
-    currentUser?.id
-  );
+  const {
+    data: bookings = [],
+    isLoading: bookingsLoading,
+    refetch: refetchBookings,
+  } = useBookings(currentUser?.id);
 
   // Mock joined and upcoming listings
   const joinedListings: Listing[] = [
@@ -107,25 +117,50 @@ const ProfileScreen: React.FC<
     },
   ];
 
-  useEffect(() => {
-    const fetchCreatedListings = async () => {
-      try {
-        const allListings = await listingsApi.getListings();
-        const userListings = allListings.filter(
-          (listing) => listing.creator_id === currentUser?.id
-        );
-        setCreatedListings(userListings);
-      } catch (error) {
-        console.error("Error fetching listings:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCreatedListings = useCallback(async () => {
+    if (!currentUser?.id) return;
 
+    try {
+      const allListings = await listingsApi.getListings();
+      const userListings = allListings.filter(
+        (listing) => listing.creator_id === currentUser?.id
+      );
+      setCreatedListings(userListings);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser?.id]);
+
+  // Fetch data on mount
+  useEffect(() => {
     if (currentUser?.id) {
       fetchCreatedListings();
     }
-  }, [currentUser?.id]);
+  }, [currentUser?.id, fetchCreatedListings]);
+
+  // Refetch data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (currentUser?.id) {
+        refetchBookings();
+        fetchCreatedListings();
+      }
+    }, [currentUser?.id, refetchBookings, fetchCreatedListings])
+  );
+
+  // Handle pull-to-refresh
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchBookings(), fetchCreatedListings()]);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchBookings, fetchCreatedListings]);
 
   const stats: StatItem[] = [
     { label: "Listings", value: createdListings.length, icon: "📍" },
@@ -173,6 +208,14 @@ const ProfileScreen: React.FC<
       style={styles.container}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: insets.bottom }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#4F46E5"
+          colors={["#4F46E5"]}
+        />
+      }
     >
       <ProfileHeader
         name={currentUser?.name || "User"}
